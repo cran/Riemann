@@ -1,15 +1,11 @@
 #' Find K-Nearest Neighbors
 #' 
 #' Given \eqn{N} observations  \eqn{X_1, X_2, \ldots, X_N \in \mathcal{M}}, 
-#' \code{riem.knn} constructs \eqn{k}-nearest neighbors. This is 
-#' a wrapper for a main function in \pkg{nabor} package. Note that the original 
-#' function contains index for each data point itself, but our function does not 
-#' consider self-neighborhood scenario. 
+#' \code{riem.knn} constructs \eqn{k}-nearest neighbors.
 #' 
 #' @param riemobj a S3 \code{"riemdata"} class for \eqn{N} manifold-valued data.
 #' @param k the number of neighbors to find.
 #' @param geometry (case-insensitive) name of geometry; either geodesic (\code{"intrinsic"}) or embedded (\code{"extrinsic"}) geometry.
-#' @param ... extra parameters to be passed onto \code{\link[nabor]{knn}} function.
 #' 
 #' @return a named list containing\describe{
 #' \item{nn.idx}{an \eqn{(N \times k)} neighborhood index matrix.}
@@ -65,10 +61,9 @@
 #' }
 #' par(opar)
 #' 
-#' @seealso \code{\link[nabor]{knn}}
 #' @concept learning
 #' @export
-riem.knn <- function(riemobj, k=2, geometry=c("intrinsic","extrinsic"), ...){
+riem.knn <- function(riemobj, k=2, geometry=c("intrinsic","extrinsic")){
   ## PREPARE
   DNAME = paste0("'",deparse(substitute(riemobj)),"'") 
   if (!inherits(riemobj,"riemdata")){
@@ -79,15 +74,42 @@ riem.knn <- function(riemobj, k=2, geometry=c("intrinsic","extrinsic"), ...){
                   match.arg(tolower(geometry),c("intrinsic","extrinsic")))
   
   ## COMPUTE PAIRWISE DISTANCE
-  distobj = stats::as.dist(basic_pdist(riemobj$name, riemobj$data, mygeom))
+  distobj = as.matrix(basic_pdist(riemobj$name, riemobj$data, mygeom))
   
-  ## RUN KNN
-  func.import = utils::getFromNamespace("hidden_knn", "maotai")
-  obj.knn     = func.import(distobj, nnbd=(myk+1), ...)
+  ## COMPUTE AND RETURN
+  return(nearest_neighbor(distobj, myk))
+}
+
+
+#' @keywords internal
+#' @noRd
+nearest_neighbor <- function(dmat, k){
+  n = base::nrow(dmat)
   
-  ## WRAP AND RETURN
+  nn.idx   = array(0,c(n,k))
+  nn.dists = array(0,c(n,k))
+  
+  for (i in 1:n){
+    tgt  = as.vector(dmat[i,])
+    i_id = order(tgt)[2:(k+1)]
+
+    nn.idx[i,]   = i_id
+    nn.dists[i,] = tgt[i_id]
+  }
+  
   output = list()
-  output$nn.idx   = obj.knn$nn.idx[,2:(myk+1)]
-  output$nn.dists = obj.knn$nn.dists[,2:(myk+1)]
+  output$nn.idx   = nn.idx
+  output$nn.dists = nn.dists
   return(output)
 }
+
+
+# library(usmap)
+# library(ggplot2)
+# data("cities")
+# mygeo = usmap_transform(data.frame(lon=cities$coord[,2], lat=cities$coord[,1]))
+# 
+# myriem = riem.sphere(cities$cartesian)
+# 
+# plot_usmap(regions="states") + 
+#   geom_point(data=mygeo, aes(x=lon.1, y=lat.1), alpha=0.25)

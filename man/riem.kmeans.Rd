@@ -4,15 +4,7 @@
 \alias{riem.kmeans}
 \title{K-Means Clustering}
 \usage{
-riem.kmeans(
-  riemobj,
-  k = 2,
-  geometry = c("intrinsic", "extrinsic"),
-  maxiter = 10,
-  nstart = 5,
-  algorithm = c("MacQueen", "Lloyd"),
-  init = c("plus", "random")
-)
+riem.kmeans(riemobj, k = 2, geometry = c("intrinsic", "extrinsic"), ...)
 }
 \arguments{
 \item{riemobj}{a S3 \code{"riemdata"} class for \eqn{N} manifold-valued data.}
@@ -21,18 +13,17 @@ riem.kmeans(
 
 \item{geometry}{(case-insensitive) name of geometry; either geodesic (\code{"intrinsic"}) or embedded (\code{"extrinsic"}) geometry.}
 
-\item{maxiter}{the maximum number of iterations allowed.}
-
-\item{nstart}{the number of random starts.}
-
-\item{algorithm}{(case-insensitive) name of an algorithm to be run. (default: \code{"MacQueen"})}
-
-\item{init}{(case-insensitive) name of an initialization scheme. (default: \code{"plus"})}
+\item{...}{extra parameters including\describe{
+\item{algorithm}{(case-insensitive) name of an algorithm; \code{"MacQueen"} (default), or \code{"Lloyd"}.}
+\item{init}{(case-insensitive) name of an initialization scheme; \code{"plus"} for k-means++ (default), or \code{"random"}.}
+\item{maxiter}{maximum number of iterations to be run (default:50).}
+\item{nstart}{the number of random starts (default: 5).}
+}}
 }
 \value{
 a named list containing\describe{
-\item{means}{a 3d array where each slice along 3rd dimension is a matrix representation of class mean.}
 \item{cluster}{a length-\eqn{N} vector of class labels (from \eqn{1:k}).}
+\item{means}{a 3d array where each slice along 3rd dimension is a matrix representation of class mean.}
 \item{score}{within-cluster sum of squares (WCSS).}
 }
 }
@@ -67,7 +58,7 @@ for (i in 21:30){
 myriem = wrap.sphere(mydata)
 mylabs = rep(c(1,2,3), each=10)
 
-## K-MEDOIDS WITH K=2,3,4
+## K-MEANS WITH K=2,3,4
 clust2 = riem.kmeans(myriem, k=2)
 clust3 = riem.kmeans(myriem, k=3)
 clust4 = riem.kmeans(myriem, k=4)

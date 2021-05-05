@@ -5,13 +5,15 @@
 #' \deqn{\textrm{min}_x \sum_{n=1}^N w_n \rho^2 (x, x_n),\quad x\in\mathcal{M}} where
 #' \eqn{\rho (x, y)} is a distance for two points \eqn{x,y\in\mathcal{M}}. 
 #' If non-uniform weights are given, normalized version of the mean is computed 
-#' and if \code{weight=NULL}, it automatically sets equal weights for all observations.
+#' and if \code{weight=NULL}, it automatically sets equal weights (\eqn{w_i = 1/n}) for all observations.
 #' 
 #' @param riemobj a S3 \code{"riemdata"} class for \eqn{N} manifold-valued data.
 #' @param weight weight of observations; if \code{NULL} it assumes equal weights, or a nonnegative length-\eqn{N} vector that sums to 1 should be given.
 #' @param geometry (case-insensitive) name of geometry; either geodesic (\code{"intrinsic"}) or embedded (\code{"extrinsic"}) geometry.
-#' @param maxiter maximum number of iterations to be run.
-#' @param eps tolerance level for stopping criterion.
+#' @param ... extra parameters including\describe{
+#' \item{maxiter}{maximum number of iterations to be run (default:50).}
+#' \item{eps}{tolerance level for stopping criterion (default: 1e-5).}
+#' }
 #' 
 #' @return a named list containing\describe{
 #' \item{mean}{a mean matrix on \eqn{\mathcal{M}}.}
@@ -45,8 +47,7 @@
 #' 
 #' @concept inference
 #' @export
-riem.mean <- function(riemobj, weight=NULL, geometry=c("intrinsic","extrinsic"), 
-                      maxiter=50, eps=1e-5){
+riem.mean <- function(riemobj, weight=NULL, geometry=c("intrinsic","extrinsic"), ...){
   ## PREPARE
   DNAME = paste0("'",deparse(substitute(riemobj)),"'") 
   if (!inherits(riemobj,"riemdata")){
@@ -60,8 +61,14 @@ riem.mean <- function(riemobj, weight=NULL, geometry=c("intrinsic","extrinsic"),
   }
   mygeom = ifelse(missing(geometry),"intrinsic",
                   match.arg(tolower(geometry),c("intrinsic","extrinsic")))
-  myiter = max(50, round(maxiter))
-  myeps  = min(max(as.double(eps),0),1e-5)
+  
+  
+  # IMPLICIT PARAMETERS 
+  pars   = list(...)
+  pnames = names(pars)
+  myiter = max(50, ifelse(("maxiter"%in%pnames), pars$maxiter, 50))
+  myeps  = min(1e-5, max(0, ifelse(("eps"%in%pnames), as.double(pars$eps), 1e-5)))
+  
   
   ## MAIN COMPUTATION
   if (all(mygeom=="intrinsic")){

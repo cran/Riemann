@@ -4,13 +4,7 @@
 \alias{riem.mean}
 \title{Fréchet Mean and Variation}
 \usage{
-riem.mean(
-  riemobj,
-  weight = NULL,
-  geometry = c("intrinsic", "extrinsic"),
-  maxiter = 50,
-  eps = 1e-05
-)
+riem.mean(riemobj, weight = NULL, geometry = c("intrinsic", "extrinsic"), ...)
 }
 \arguments{
 \item{riemobj}{a S3 \code{"riemdata"} class for \eqn{N} manifold-valued data.}
@@ -19,9 +13,10 @@ riem.mean(
 
 \item{geometry}{(case-insensitive) name of geometry; either geodesic (\code{"intrinsic"}) or embedded (\code{"extrinsic"}) geometry.}
 
-\item{maxiter}{maximum number of iterations to be run.}
-
-\item{eps}{tolerance level for stopping criterion.}
+\item{...}{extra parameters including\describe{
+\item{maxiter}{maximum number of iterations to be run (default:50).}
+\item{eps}{tolerance level for stopping criterion (default: 1e-5).}
+}}
 }
 \value{
 a named list containing\describe{
@@ -35,7 +30,7 @@ compute Fréchet mean and variation with respect to the geometry by minimizing
 \deqn{\textrm{min}_x \sum_{n=1}^N w_n \rho^2 (x, x_n),\quad x\in\mathcal{M}} where
 \eqn{\rho (x, y)} is a distance for two points \eqn{x,y\in\mathcal{M}}. 
 If non-uniform weights are given, normalized version of the mean is computed 
-and if \code{weight=NULL}, it automatically sets equal weights for all observations.
+and if \code{weight=NULL}, it automatically sets equal weights (\eqn{w_i = 1/n}) for all observations.
 }
 \examples{
 #-------------------------------------------------------------------

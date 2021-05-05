@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include "riemann_src.h"
 #include "riemann_manifolds.h"
+#include <RcppArmadilloExtensions/sample.h>
 
 using namespace Rcpp;
 using namespace arma;
@@ -24,6 +25,8 @@ arma::mat riem_initialize(std::string mfd, arma::field<arma::mat> data, arma::ve
   arma::mat output;
   if (mfd=="sphere"){
     output = sphere_initialize(data, weight);
+  } else if (mfd=="landmark"){
+    output = landmark_initialize(data, weight);
   } else if (mfd=="spdk"){
     output = spdk_initialize(data, weight);
   } else if (mfd=="multinomial"){
@@ -59,6 +62,8 @@ arma::mat riem_exp(std::string mfd, arma::mat x, arma::mat d, double t){
   arma::mat output;
   if (mfd=="sphere"){
     output = sphere_exp(x, d, t);
+  } else if (mfd=="landmark"){
+    output = landmark_exp(x, d, t);
   } else if (mfd=="spdk"){
     output = spdk_exp(x,d,t);
   } else if (mfd=="multinomial"){
@@ -88,6 +93,8 @@ arma::mat riem_log(std::string mfd, arma::mat x, arma::mat y){
   arma::mat output;
   if (mfd=="sphere"){
     output = sphere_log(x, y);
+  } else if (mfd=="landmark"){
+    output = landmark_log(x, y);
   } else if (mfd=="spdk"){
     output = spdk_log(x,y);
   } else if (mfd=="multinomial"){
@@ -117,6 +124,8 @@ double riem_dist(std::string mfd, arma::mat x, arma::mat y){
   double output;
   if (mfd=="sphere"){
     output = sphere_dist(x, y);
+  } else if (mfd=="landmark"){
+    output = landmark_dist(x, y);
   } else if (mfd=="spdk"){
     output = spdk_dist(x, y);
   } else if (mfd=="multinomial"){
@@ -145,6 +154,8 @@ double riem_distext(std::string mfd, arma::mat x, arma::mat y){
   double output;
   if (mfd=="sphere"){
     output = sphere_distext(x, y);
+  } else if (mfd=="landmark"){
+    output = landmark_distext(x, y);
   } else if (mfd=="multinomial"){
     output = multinomial_distext(x, y);
   } else if (mfd=="grassmann"){
@@ -169,6 +180,8 @@ arma::vec riem_equiv(std::string mfd, arma::mat x, int m, int n){
   arma::vec output;
   if (mfd=="sphere"){
     output = sphere_equiv(x, m, n);
+  } else if (mfd=="landmark"){
+    output = landmark_equiv(x, m, n);
   } else if (mfd=="multinomial"){
     output = multinomial_equiv(x, m, n);
   } else if (mfd=="grassmann"){
@@ -192,6 +205,8 @@ arma::mat riem_invequiv(std::string mfd, arma::vec x, int m, int n){
   arma::mat output;
   if (mfd=="sphere"){
     output = sphere_invequiv(x, m, n);
+  } else if (mfd=="landmark"){
+    output = landmark_invequiv(x, m, n);
   } else if (mfd=="multinomial"){
     output = multinomial_invequiv(x, m, n);
   } else if (mfd=="grassmann"){
@@ -215,6 +230,8 @@ double riem_metric(std::string mfd, arma::mat x, arma::mat d1, arma::mat d2){
   double output;
   if (mfd=="sphere"){
     output = sphere_metric(x,d1,d2);
+  } else if (mfd=="landmark"){
+    output = landmark_metric(x,d1,d2);
   } else if (mfd=="spdk"){
     output = spdk_metric(x,d1,d2);
   } else if (mfd=="grassmann"){
@@ -320,4 +337,40 @@ arma::mat internal_mean_init(std::string mfd, std::string dtype, arma::cube data
     Sold = riem_invequiv(mfd, Soldvec, nrow, ncol);
   }
   return(Sold);
+}
+arma::mat internal_logvectors(std::string mfd, arma::cube data){
+  // PARAMETERS
+  int nrow = data.n_rows;
+  int ncol = data.n_cols;
+  int N    = data.n_slices;
+  
+  // COMPUTE MEAN
+  arma::mat X = internal_mean(mfd, "intrinsic", data, 50, 1e-6);
+  
+  // EXEMPLARY VECTOR
+  arma::vec logvec = arma::vectorise(riem_log(mfd, X, data.slice(0)));
+  int P = logvec.n_elem;
+  
+  // ITERATION
+  arma::mat output(N,P,fill::zeros);
+  for (int n=0; n<N; n++){
+    output.row(n) = arma::trans(arma::vectorise(riem_log(mfd, X, data.slice(n))));
+  }
+  return(output);
+}
+arma::uvec helper_sample(int N, int m, arma::vec prob, bool replace){
+  arma::uvec x     = arma::linspace<arma::uvec>(0L, N-1L, N);
+  arma::vec myprob = prob/arma::accu(prob);
+  arma::uvec output = Rcpp::RcppArmadillo::sample(x, m, replace, myprob);
+  return(output);
+}
+arma::uvec helper_setdiff(arma::uvec& x, arma::uvec& y){
+  std::vector<int> a = arma::conv_to< std::vector<int> >::from(arma::sort(x));
+  std::vector<int> b = arma::conv_to< std::vector<int> >::from(arma::sort(y));
+  std::vector<int> out;
+  
+  std::set_difference(a.begin(), a.end(), b.begin(), b.end(),
+                      std::inserter(out, out.end()));
+  
+  return arma::conv_to<arma::uvec>::from(out);
 }

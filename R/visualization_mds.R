@@ -5,7 +5,7 @@
 #' in Euclidean space. Usually, \code{ndim=2,3} are chosen for visualization.
 #' 
 #' @param riemobj a S3 \code{"riemdata"} class for \eqn{N} manifold-valued data.
-#' @param ndim an integer-valued target dimension.
+#' @param ndim an integer-valued target dimension (default: 2).
 #' @param geometry (case-insensitive) name of geometry; either geodesic (\code{"intrinsic"}) or embedded (\code{"extrinsic"}) geometry.
 #' 
 #' @return a named list containing \describe{
@@ -64,11 +64,14 @@ riem.mds <- function(riemobj, ndim=2, geometry=c("intrinsic","extrinsic")){
   mygeom = ifelse(missing(geometry),"intrinsic",
                   match.arg(tolower(geometry),c("intrinsic","extrinsic")))
   
-  ## COMPUTE PAIRWISE DISTANCE
-  distobj = stats::as.dist(basic_pdist(riemobj$name, riemobj$data, mygeom))
+  # ## OLD PART : FUNCTION IMPORT FROM MAOTAI
+  # distobj = stats::as.dist(basic_pdist(riemobj$name, riemobj$data, mygeom))
+  # 
+  # ## COMPUTE MDS AND RETURN
+  # func.import = utils::getFromNamespace("hidden_cmds", "maotai")
+  # out.cmds    = func.import(distobj, ndim=myndim)
+  # return(out.cmds)
   
-  ## COMPUTE MDS AND RETURN
-  func.import = utils::getFromNamespace("hidden_cmds", "maotai")
-  out.cmds    = func.import(distobj, ndim=myndim)
-  return(out.cmds)
+  # COMPUTE WITH CPP
+  return(visualize_cmds(riemobj$name, mygeom, riemobj$data, myndim))
 }

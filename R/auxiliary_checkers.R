@@ -2,6 +2,25 @@
 # check_list_eqsize : for a list, all elements are of same size
 # check_3darray     : check if 3d array of (p,p,N) type
 # check_inputmfd    : check the object to abide by the structure
+# check_spdmat      : check SPD matrix
+# check_num_nonneg  : check a nonnegative real number
+# check_unitvec     : check a unit-norm vector
+
+
+# check_spdmat ------------------------------------------------------------
+#' @keywords internal
+#' @noRd
+check_spdmat <- function(x){
+  p = nrow(x)
+  cond1 = (nrow(x)==ncol(x))
+  cond2 = (round(mat_rank(x))==p) # full-rank
+  cond3 = isSymmetric(x)
+  if (cond1&&cond2&&cond3){
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
 
 
 # check_weight      : nonnegative numbers that sum to 1 of given length ========
@@ -72,5 +91,29 @@ check_inputmfd <- function(riemobj, funcname){
   cond2 = all(riemobj$name==mfdtype)
   if (!(cond1&&cond2)){
     stop(paste0("* ",funcname," : input should be an object of 'riemdata' class with ",mfdtype,"-valued data."))
+  }
+}
+
+# check_num_nonneg  : check a nonnegative real number ---------------------
+#' @keywords internal
+#' @noRd
+check_num_nonneg <- function(x, funcname){
+  cond1 = (length(x)==1)
+  cond2 = ((all(is.finite(x)))&&(!any(is.na(x)))&&(all(x>=0)))
+  if (cond1&&cond2){
+    return(as.double(x))
+  } else {
+    stop(paste0("* ",funcname," : ",deparse(substitute(x))," is not a nonnegative number."))
+  }
+}
+
+# check_unitvec : check a unit-norm vector --------------------------------
+check_unitvec <- function(x, funcname){
+  cond1 = is.vector(x)
+  cond2 = (abs(sum(x^2)-1) < sqrt(.Machine$double.eps))
+  if (cond1&&cond2){
+    return(as.vector(x))
+  } else {
+    stop(paste0("* ",funcname," : ",deparse(substitute(x))," is not a unit vector."))
   }
 }

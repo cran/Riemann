@@ -25,14 +25,16 @@
 #' #  density on 2-dimensional sphere S^2 in R^3.
 #' #-------------------------------------------------------------------
 #' ## PREPARE DATA OF 4 CLASSES
-#' ndata  = 20
+#' ndata  = 200
 #' class1 = list()
 #' class2 = list()
 #' class3 = list()
 #' class4 = list()
 #' for (i in 1:ndata){
-#'   tmp = matrix(rnorm(4*3), ncol=3)
-#'   tmp = tmp/sqrt(rowSums(tmp^2))
+#'   tmpxy = matrix(rnorm(4*2, sd=0.1), ncol=2)
+#'   tmpz  = rep(1,4)
+#'   tmp3d = cbind(tmpxy, tmpz)
+#'   tmp  = tmp3d/sqrt(rowSums(tmp3d^2))
 #'   
 #'   class1[[i]] = tmp[1,]
 #'   class2[[i]] = tmp[2,]
@@ -49,7 +51,7 @@
 #' 
 #' \donttest{
 #' ## RUN THE PERMUTATION TEST WITH MANY PERMUTATIONS
-#' riem.fanovaP(obj1, obj2, obj3, obj4, nperm=9999)
+#' riem.fanovaP(obj1, obj2, obj3, obj4, nperm=999)
 #' }
 #' 
 #' @references 
@@ -242,3 +244,26 @@ common_fanova <- function(distall, distvecs, manifold, dataname){
   class(res) = "htest"
   return(res)
 }
+
+
+
+# set.seed(777)
+# ntest = 1000
+# pvals.a = rep(0,ntest)
+# pvals.p = rep(0,ntest)
+# 
+# for (i in 1:ntest){
+#   X = cbind(matrix(rnorm(30*2, sd=0.1),ncol=2), rep(1,30))
+#   Y = cbind(matrix(rnorm(30*2, sd=0.1),ncol=2), rep(1,30))
+#   Xnorm = X/sqrt(rowSums(X^2))
+#   Ynorm = Y/sqrt(rowSums(Y^2))
+# 
+#   Xriem = wrap.sphere(Xnorm)
+#   Yriem = wrap.sphere(Ynorm)
+#   pvals.a[i] = riem.fanova(Xriem, Yriem)$p.value
+#   pvals.p[i] = riem.fanovaP(Xriem, Yriem, nperm=999)$p.value
+#   print(paste0("iteration ",i,"/",ntest," complete.."))
+# }
+# 
+# round(sum((pvals.a <= 0.05))/ntest, 5) # asymptotic theory is nice
+# round(sum((pvals.p <= 0.05))/ntest, 5) # but PERMUTATION SEEMS TO WORK BETTER! (0.052)
