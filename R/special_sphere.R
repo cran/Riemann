@@ -329,6 +329,12 @@ mixspnorm <- function(data, k=2, same.lambda=FALSE, variants=c("soft","hard","st
       new.eta = spmix.stochastic(new.eta)
     }
     
+    # we need to stop if there is empty cluster
+    new.label = apply(new.eta, 1, which.max)
+    if (length(unique(new.label)) < myk){
+      break
+    }
+    
     # M-Step
     # M1. mu / centers & d2mat
     new.mu     = spmix.frechet(spobj, new.eta) # (k,p) matrix of row-stacked centroids
@@ -419,6 +425,14 @@ spmix.frechet <- function(spobj, membership){
   output = array(0,c(K,P))
   for (k in 1:K){
     partweight = as.vector(membership[,k])
+    
+    # sel_id = (partweight > sqrt(.Machine$double.eps))
+    # sel_data   = spobj$data[sel_id]
+    # sel_weight = partweight[sel_id]
+    # sel_weight = sel_weight/base::sum(sel_weight)
+    # output[k,] = as.vector(inference_mean_intrinsic("sphere", sel_data, sel_weight, 100, 1e-6)$mean)
+    # print(paste0("start at column ",k))
+    
     if (sum(partweight==1)==1){
       output[k,] = as.vector(spobj$data[[which(partweight==1)]])
     } else {
@@ -497,16 +511,30 @@ spmix.loglkd <- function(d2mat, lambdas, props, P){
     return(Zlbd)
   }
   
-  logZlbd = rep(0,K)
-  logprop = base::log(props)
+  vecZlbd = rep(0,K)
   for (k in 1:K){
-    logZlbd[k] = base::log(evalZ(lambdas[k]))
+    vecZlbd[k] = evalZ(lambdas[k])
+  }
+  # logprop = base::log(props)
+  # for (k in 1:K){
+  #   logZlbd[k] = base::log(evalZ(lambdas[k]))
+  # }
+  
+  # evaluate the density
+  mixdensity = array(0,c(N,K))
+  for (n in 1:N){
+    for (k in 1:K){
+      mixdensity[n,k] = props[k]*exp(-(d2mat[n,k])*lambdas[k]/2)/vecZlbd[k]
+    }
   }
   
-  term1 = base::sum(logprop)*N
-  term2 = -base::sum(logZlbd)*N
-  term3 = base::sum(d2mat%*%(-base::diag(lambdas)/2))
-  return(term1+term2+term3)
+  # evaluate the output
+  output = base::sum(base::log(base::rowSums(mixdensity)))
+  return(output)
+  # term1 = base::sum(logprop)*N
+  # term2 = -base::sum(logZlbd)*N
+  # term3 = base::sum(d2mat%*%(-base::diag(lambdas)/2))
+  # return(term1+term2+term3)
 }
 # 6. spmix.eta : compute eta (membership)
 #' @keywords internal
@@ -669,3 +697,19 @@ predict.mixspnorm <- function(object, newdata, ...){
   output  = spmix.getcluster(fin.eta)
   return(output)
 }
+
+
+# xx = c(rspnorm(50, c(1,0,0), 20),
+#        rspnorm(50, c(-1/sqrt(2),1/sqrt(2),0), 20),
+#        rspnorm(50, c(0,0,-1), 20))
+# 
+# cc = rbind(mixspnorm(xx, k=2)$criteria,
+# mixspnorm(xx, k=3)$criteria,
+# mixspnorm(xx, k=4)$criteria,
+# mixspnorm(xx, k=5)$criteria,
+# mixspnorm(xx, k=6)$criteria,
+# mixspnorm(xx, k=7)$criteria)
+# 
+# matplot(2:7, cc, type="b")
+
+

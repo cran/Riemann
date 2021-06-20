@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 #  if (!require("devtools")) {
 #    install.packages("devtools")
 #  }
-#  devtools::install_github("kyoustat/Riemann")
+#  devtools::install_github("kisungyou/Riemann")
 
 ## ----setup, message=FALSE, warning=FALSE--------------------------------------
 library(Riemann)
