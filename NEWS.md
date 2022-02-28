@@ -1,3 +1,11 @@
+# Riemann 0.1.4
+
+* Two mixture models on the unit hypersphere added.
+* Supports for spherical Laplace distribution added.
+* `riem.phate()` is added for sub-manifold learning/visualization.
+* New data from EEG ERPs is available by `data(ERP)`.
+* `spd.wassbary()` is added to compute Wasserstein barycenter of Gaussian distributions.
+
 # Riemann 0.1.3
 
 * Modified `mle.spnorm()` for controls with user-defined stopping criteria.

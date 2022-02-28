@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // cpp_ipot20
 Rcpp::List cpp_ipot20(arma::vec a, arma::vec b, arma::mat dab, double lambda, double p, int maxiter, double abstol, int L);
 RcppExport SEXP _Riemann_cpp_ipot20(SEXP aSEXP, SEXP bSEXP, SEXP dabSEXP, SEXP lambdaSEXP, SEXP pSEXP, SEXP maxiterSEXP, SEXP abstolSEXP, SEXP LSEXP) {
@@ -21,6 +26,17 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
     Rcpp::traits::input_parameter< int >::type L(LSEXP);
     rcpp_result_gen = Rcpp::wrap(cpp_ipot20(a, b, dab, lambda, p, maxiter, abstol, L));
+    return rcpp_result_gen;
+END_RCPP
+}
+// cpp_pdist
+arma::mat cpp_pdist(arma::mat& X);
+RcppExport SEXP _Riemann_cpp_pdist(SEXP XSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(cpp_pdist(X));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -563,28 +579,93 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// spd_dist
-double spd_dist(arma::mat X, arma::mat Y, std::string geometry);
-RcppExport SEXP _Riemann_spd_dist(SEXP XSEXP, SEXP YSEXP, SEXP geometrySEXP) {
+// spdwass_sylvester
+arma::mat spdwass_sylvester(arma::mat A, arma::mat X);
+RcppExport SEXP _Riemann_spdwass_sylvester(SEXP ASEXP, SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type A(ASEXP);
     Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< std::string >::type geometry(geometrySEXP);
-    rcpp_result_gen = Rcpp::wrap(spd_dist(X, Y, geometry));
+    rcpp_result_gen = Rcpp::wrap(spdwass_sylvester(A, X));
     return rcpp_result_gen;
 END_RCPP
 }
-// spd_pdist
-arma::mat spd_pdist(Rcpp::List& data, std::string geometry);
-RcppExport SEXP _Riemann_spd_pdist(SEXP dataSEXP, SEXP geometrySEXP) {
+// spdwass_log
+arma::mat spdwass_log(arma::mat C, arma::mat X);
+RcppExport SEXP _Riemann_spdwass_log(SEXP CSEXP, SEXP XSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List& >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type C(CSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    rcpp_result_gen = Rcpp::wrap(spdwass_log(C, X));
+    return rcpp_result_gen;
+END_RCPP
+}
+// spdwass_exp
+arma::mat spdwass_exp(arma::mat C, arma::mat V, double t);
+RcppExport SEXP _Riemann_spdwass_exp(SEXP CSEXP, SEXP VSEXP, SEXP tSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type C(CSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
+    Rcpp::traits::input_parameter< double >::type t(tSEXP);
+    rcpp_result_gen = Rcpp::wrap(spdwass_exp(C, V, t));
+    return rcpp_result_gen;
+END_RCPP
+}
+// spdwass_metric
+double spdwass_metric(arma::mat S, arma::mat X, arma::mat Y);
+RcppExport SEXP _Riemann_spdwass_metric(SEXP SSEXP, SEXP XSEXP, SEXP YSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type S(SSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type X(XSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
+    rcpp_result_gen = Rcpp::wrap(spdwass_metric(S, X, Y));
+    return rcpp_result_gen;
+END_RCPP
+}
+// spdwass_baryRU02
+arma::mat spdwass_baryRU02(arma::field<arma::mat> spdlist, arma::vec weight, int maxiter, double abstol);
+RcppExport SEXP _Riemann_spdwass_baryRU02(SEXP spdlistSEXP, SEXP weightSEXP, SEXP maxiterSEXP, SEXP abstolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::field<arma::mat> >::type spdlist(spdlistSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type weight(weightSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
+    rcpp_result_gen = Rcpp::wrap(spdwass_baryRU02(spdlist, weight, maxiter, abstol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// spdwass_baryAE16
+arma::mat spdwass_baryAE16(arma::field<arma::mat> spdlist, arma::vec weight, int maxiter, double abstol);
+RcppExport SEXP _Riemann_spdwass_baryAE16(SEXP spdlistSEXP, SEXP weightSEXP, SEXP maxiterSEXP, SEXP abstolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::field<arma::mat> >::type spdlist(spdlistSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type weight(weightSEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< double >::type abstol(abstolSEXP);
+    rcpp_result_gen = Rcpp::wrap(spdwass_baryAE16(spdlist, weight, maxiter, abstol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// src_spd_pdist
+arma::mat src_spd_pdist(arma::cube& data, std::string geometry);
+RcppExport SEXP _Riemann_src_spd_pdist(SEXP dataSEXP, SEXP geometrySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::cube& >::type data(dataSEXP);
     Rcpp::traits::input_parameter< std::string >::type geometry(geometrySEXP);
-    rcpp_result_gen = Rcpp::wrap(spd_pdist(data, geometry));
+    rcpp_result_gen = Rcpp::wrap(src_spd_pdist(data, geometry));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -660,6 +741,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_Riemann_cpp_ipot20", (DL_FUNC) &_Riemann_cpp_ipot20, 8},
+    {"_Riemann_cpp_pdist", (DL_FUNC) &_Riemann_cpp_pdist, 1},
     {"_Riemann_macg_mle", (DL_FUNC) &_Riemann_macg_mle, 3},
     {"_Riemann_macg_sample", (DL_FUNC) &_Riemann_macg_sample, 3},
     {"_Riemann_macg_density", (DL_FUNC) &_Riemann_macg_density, 2},
@@ -698,8 +780,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_Riemann_learning_coreset18B", (DL_FUNC) &_Riemann_learning_coreset18B, 6},
     {"_Riemann_runif_sphere", (DL_FUNC) &_Riemann_runif_sphere, 2},
     {"_Riemann_runif_stiefel", (DL_FUNC) &_Riemann_runif_stiefel, 3},
-    {"_Riemann_spd_dist", (DL_FUNC) &_Riemann_spd_dist, 3},
-    {"_Riemann_spd_pdist", (DL_FUNC) &_Riemann_spd_pdist, 2},
+    {"_Riemann_spdwass_sylvester", (DL_FUNC) &_Riemann_spdwass_sylvester, 2},
+    {"_Riemann_spdwass_log", (DL_FUNC) &_Riemann_spdwass_log, 2},
+    {"_Riemann_spdwass_exp", (DL_FUNC) &_Riemann_spdwass_exp, 3},
+    {"_Riemann_spdwass_metric", (DL_FUNC) &_Riemann_spdwass_metric, 3},
+    {"_Riemann_spdwass_baryRU02", (DL_FUNC) &_Riemann_spdwass_baryRU02, 4},
+    {"_Riemann_spdwass_baryAE16", (DL_FUNC) &_Riemann_spdwass_baryAE16, 4},
+    {"_Riemann_src_spd_pdist", (DL_FUNC) &_Riemann_src_spd_pdist, 2},
     {"_Riemann_mat_rank", (DL_FUNC) &_Riemann_mat_rank, 1},
     {"_Riemann_mat_symm", (DL_FUNC) &_Riemann_mat_symm, 2},
     {"_Riemann_mat_diaghalf", (DL_FUNC) &_Riemann_mat_diaghalf, 1},

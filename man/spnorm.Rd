@@ -24,7 +24,7 @@ mle.spnorm(data, method = c("Newton", "Halley", "Optimize", "DE"), ...)
 
 \item{n}{the number of samples to be generated.}
 
-\item{method}{an algorithm name for concentration parameter estimation.i}
+\item{method}{an algorithm name for concentration parameter estimation. It should be one of \code{"Newton"},\code{"Halley"},\code{"Optimize"}, and \code{"DE"} (case sensitive).}
 
 \item{...}{extra parameters for computations, including\describe{
 \item{maxiter}{maximum number of iterations to be run (default:50).}
@@ -40,7 +40,7 @@ containing estimates of location (\code{mu}) and concentration (\code{lambda}) p
 We provide tools for an isotropic spherical normal (SN) distributions on 
 a \eqn{(p-1)}-sphere in \eqn{\mathbf{R}^p} for sampling, density evaluation, and maximum likelihood estimation 
 of the parameters where the density is defined as
-\deqn{f_SN(x; \mu, \lambda) = \frac{1}{Z(\lambda)} \exp \left( -\frac{\lambda}{2} d^2(x,\mu) \right)}
+\deqn{f_{SN}(x; \mu, \lambda) = \frac{1}{Z(\lambda)} \exp \left( -\frac{\lambda}{2} d^2(x,\mu) \right)}
 for location and concentration parameters \eqn{\mu} and \eqn{\lambda} respectively and the normalizing constant \eqn{Z(\lambda)}.
 }
 \examples{
@@ -82,6 +82,10 @@ abline(h=true.lbd, lwd=2, col="red")
 par(opar)
 }
 
+}
+\references{
+\insertRef{hauberg_2018_DirectionalStatisticsSpherical}{Riemann}
 
+\insertRef{you_2022_ParameterEstimationModelbased}{Riemann}
 }
 \concept{distribution}
